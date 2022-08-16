@@ -2,6 +2,9 @@ package simpledb.common;
 
 import simpledb.storage.DbFile;
 
+/**
+ * 表的信息，包含表ID、表名、文件等
+ */
 public class TableInfo {
 
     private int    tableId;

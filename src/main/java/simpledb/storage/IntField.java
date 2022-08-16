@@ -7,12 +7,13 @@ import java.io.*;
 
 /**
  * Instance of Field that stores a single integer.
+ * int字段
  */
 public class IntField implements Field {
 
     private static final long serialVersionUID = 1L;
 
-    private final int         value;
+    private final int value;
 
     public int getValue() {
         return value;
@@ -36,8 +37,7 @@ public class IntField implements Field {
     }
 
     public boolean equals(Object field) {
-        if (!(field instanceof IntField))
-            return false;
+        if (!(field instanceof IntField)) return false;
         return ((IntField) field).value == value;
     }
 

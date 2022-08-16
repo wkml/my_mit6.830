@@ -25,9 +25,8 @@ public class SimpleDb {
                     Type[] ts = new Type[numOfAttributes];
                     char fieldSeparator = ',';
 
-                    if (args.length == 3)
-                        for (int i = 0; i < numOfAttributes; i++)
-                            ts[i] = Type.INT_TYPE;
+                    if (args.length == 3) for (int i = 0; i < numOfAttributes; i++)
+                        ts[i] = Type.INT_TYPE;
                     else {
                         String typeString = args[3];
                         String[] typeStringAr = typeString.split(",");
@@ -37,21 +36,17 @@ public class SimpleDb {
                         }
                         int index = 0;
                         for (String s : typeStringAr) {
-                            if (s.equalsIgnoreCase("int"))
-                                ts[index++] = Type.INT_TYPE;
-                            else if (s.equalsIgnoreCase("string"))
-                                ts[index++] = Type.STRING_TYPE;
+                            if (s.equalsIgnoreCase("int")) ts[index++] = Type.INT_TYPE;
+                            else if (s.equalsIgnoreCase("string")) ts[index++] = Type.STRING_TYPE;
                             else {
                                 System.err.println("Unknown type " + s);
                                 return;
                             }
                         }
-                        if (args.length == 5)
-                            fieldSeparator = args[4].charAt(0);
+                        if (args.length == 5) fieldSeparator = args[4].charAt(0);
                     }
 
-                    HeapFileEncoder.convert(sourceTxtFile, targetDatFile, BufferPool.getPageSize(), numOfAttributes,
-                        ts, fieldSeparator);
+                    HeapFileEncoder.convert(sourceTxtFile, targetDatFile, BufferPool.getPageSize(), numOfAttributes, ts, fieldSeparator);
 
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -88,8 +83,7 @@ public class SimpleDb {
                     java.lang.reflect.Method m = c.getMethod("main", s);
                     m.invoke(null, (Object) newargs);
                 } catch (ClassNotFoundException cne) {
-                    System.out
-                        .println("Class Parser not found -- perhaps you are trying to run the parser as a part of lab1?");
+                    System.out.println("Class Parser not found -- perhaps you are trying to run the parser as a part of lab1?");
                 } catch (Exception e) {
                     System.out.println("Error in parser.");
                     e.printStackTrace();

@@ -13,6 +13,7 @@ import java.util.*;
 /**
  * The Catalog keeps track of all available tables in the database and their
  * associated schemas.
+ * catalog记录了数据库中所有的表以及每一个表的架构信息
  * For now, this is a stub catalog that must be populated with tables by a
  * user program before it can be used -- eventually, this should be converted
  * to a catalog that reads a catalog table from disk.
@@ -21,8 +22,10 @@ import java.util.*;
  */
 public class Catalog {
 
+    // 维护了 ID -> 表信息 的映射关系
     private final Map<Integer, TableInfo> tableInfoMap;
-    private final Map<String, Integer>    nameToIdMap;
+    // 维护 name -> tableId 的映射关系
+    private final Map<String, Integer> nameToIdMap;
 
     /**
      * Constructor.
@@ -35,13 +38,17 @@ public class Catalog {
     }
 
     /**
-     * Add a new table to the catalog.
-     * This table's contents are stored in the specified DbFile.
-     * @param file the contents of the table to add;  file.getId() is the identfier of
-     *    this file/tupledesc param for the calls getTupleDesc and getFile
-     * @param name the name of the table -- may be an empty string.  May not be null.  If a name
-     * conflict exists, use the last table to be added as the table for a given name.
+     * Add a new table to the catalog.This table's contents are stored in the specified DbFile.
+     * 添加一张新表，将表的内容存储在dbfile中
+     *
+     * @param file      the contents of the table to add;  file.getId() is the identfier of
+     *                  this file/tupledesc param for the calls getTupleDesc and getFile
+     *                  存放表的文件
+     * @param name      the name of the table -- may be an empty string.  May not be null.  If a name
+     *                  conflict exists, use the last table to be added as the table for a given name.
+     *                  一个表的名字
      * @param pkeyField the name of the primary key field
+     *                  表的主键名
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
@@ -51,6 +58,7 @@ public class Catalog {
         this.nameToIdMap.put(name, tableId);
     }
 
+    // 默认主键名为空
     public void addTable(DbFile file, String name) {
         addTable(file, name, "");
     }
@@ -59,8 +67,9 @@ public class Catalog {
      * Add a new table to the catalog.
      * This table has tuples formatted using the specified TupleDesc and its
      * contents are stored in the specified DbFile.
+     * 随机表名
      * @param file the contents of the table to add;  file.getId() is the identfier of
-     *    this file/tupledesc param for the calls getTupleDesc and getFile
+     *             this file/tupledesc param for the calls getTupleDesc and getFile
      */
     public void addTable(DbFile file) {
         addTable(file, (UUID.randomUUID()).toString());
@@ -68,6 +77,7 @@ public class Catalog {
 
     /**
      * Return the id of the table with a specified name,
+     *
      * @throws NoSuchElementException if the table doesn't exist
      */
     public int getTableId(String name) throws NoSuchElementException {
@@ -87,8 +97,9 @@ public class Catalog {
 
     /**
      * Returns the tuple descriptor (schema) of the specified table
+     *
      * @param tableid The id of the table, as specified by the DbFile.getId()
-     *     function passed to addTable
+     *                function passed to addTable
      * @throws NoSuchElementException if the table doesn't exist
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
@@ -103,8 +114,9 @@ public class Catalog {
     /**
      * Returns the DbFile that can be used to read the contents of the
      * specified table.
+     *
      * @param tableid The id of the table, as specified by the DbFile.getId()
-     *     function passed to addTable
+     *                function passed to addTable
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
         // some code goes here
@@ -127,7 +139,9 @@ public class Catalog {
         return getTableInfo(tableid).getTableName();
     }
 
-    /** Delete all tables from the catalog */
+    /**
+     * Delete all tables from the catalog
+     */
     public void clear() {
         // some code goes here
         this.tableInfoMap.clear();
@@ -136,7 +150,8 @@ public class Catalog {
 
     /**
      * Reads the schema from a file and creates the appropriate tables in the database.
-     * @param catalogFile
+     *
+     * @param catalogFile 维护所有表信息的文件名
      */
     public void loadSchema(String catalogFile) {
         String line = "";
@@ -156,17 +171,14 @@ public class Catalog {
                 for (String e : els) {
                     String[] els2 = e.trim().split(" ");
                     names.add(els2[0].trim());
-                    if (els2[1].trim().toLowerCase().equals("int"))
-                        types.add(Type.INT_TYPE);
-                    else if (els2[1].trim().toLowerCase().equals("string"))
-                        types.add(Type.STRING_TYPE);
+                    if (els2[1].trim().toLowerCase().equals("int")) types.add(Type.INT_TYPE);
+                    else if (els2[1].trim().toLowerCase().equals("string")) types.add(Type.STRING_TYPE);
                     else {
                         System.out.println("Unknown type " + els2[1]);
                         System.exit(0);
                     }
                     if (els2.length == 3) {
-                        if (els2[2].trim().equals("pk"))
-                            primaryKey = els2[0].trim();
+                        if (els2[2].trim().equals("pk")) primaryKey = els2[0].trim();
                         else {
                             System.out.println("Unknown annotation " + els2[2]);
                             System.exit(0);
