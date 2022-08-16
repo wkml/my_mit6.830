@@ -7,6 +7,7 @@ import java.util.*;
 
 /**
  * TupleDesc describes the schema of a tuple.
+ * 一个表的字段信息
  */
 public class TupleDesc implements Serializable {
 
@@ -110,6 +111,7 @@ public class TupleDesc implements Serializable {
     }
 
     /**
+     * 返回一个表一共有几个字段
      * @return the number of fields in this TupleDesc
      */
     public int numFields() {
@@ -119,6 +121,7 @@ public class TupleDesc implements Serializable {
 
     /**
      * Gets the (possibly null) field name of the ith field of this TupleDesc.
+     * 获取第i个列的名字
      *
      * @param i
      *            index of the field name to return. It must be a valid index.
