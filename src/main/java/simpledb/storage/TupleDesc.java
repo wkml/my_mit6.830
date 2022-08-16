@@ -11,12 +11,15 @@ import java.util.*;
  */
 public class TupleDesc implements Serializable {
 
+    // 一个表的字段列表
     private List<TDItem> descList;
 
+    // 一个表的字段数量
     private int          fieldNum;
 
     /**
      * A help class to facilitate organizing the information of each field
+     * 表字段
      * */
     public static class TDItem implements Serializable {
 
