@@ -31,9 +31,9 @@ public class BufferPool {
      * Bytes per page, including header.
      * 每一页的字节数
      */
-    private static final int             DEFAULT_PAGE_SIZE = 4096;
+    private static final int DEFAULT_PAGE_SIZE = 4096;
 
-    private static int                   pageSize          = DEFAULT_PAGE_SIZE;
+    private static int pageSize = DEFAULT_PAGE_SIZE;
 
     /**
      * Default number of pages passed to the constructor. This is used by
@@ -41,11 +41,11 @@ public class BufferPool {
      * constructor instead.
      * 默认页数
      */
-    public static final int              DEFAULT_PAGES     = 50;
+    public static final int DEFAULT_PAGES = 50;
 
     private final LruCache<PageId, Page> lruCache;
 
-    private final LockManager            lockManager;
+    private final LockManager lockManager;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -87,8 +87,7 @@ public class BufferPool {
      * @param pid  the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException,
-                                                                        DbException {
+    public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, DbException {
         // some code goes here
         final int lockType = perm == Permissions.READ_ONLY ? 0 : 1;
         final int timeout = new Random().nextInt(2000) + 1000;
@@ -104,6 +103,7 @@ public class BufferPool {
         return loadPageAndCache(pid);
     }
 
+    // 从文件中拿页，并加入到缓存中
     private Page loadPageAndCache(final PageId pid) throws DbException {
         final DbFile dbFile = Database.getCatalog().getDatabaseFile(pid.getTableId());
         final Page dbPage = dbFile.readPage(pid);
@@ -188,8 +188,7 @@ public class BufferPool {
      * @param tableId the table to add the tuple to
      * @param t       the tuple to add
      */
-    public void insertTuple(TransactionId tid, int tableId, Tuple t) throws DbException, IOException,
-                                                                    TransactionAbortedException {
+    public void insertTuple(TransactionId tid, int tableId, Tuple t) throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
         final DbFile table = Database.getCatalog().getDatabaseFile(tableId);

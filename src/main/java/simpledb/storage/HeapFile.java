@@ -21,8 +21,8 @@ import java.util.*;
  */
 public class HeapFile implements DbFile {
 
-    private final File       file;
-    private final TupleDesc  td;
+    private final File file;
+    private final TupleDesc td;
     private RandomAccessFile randomAccessFile;
 
     /**
@@ -69,6 +69,7 @@ public class HeapFile implements DbFile {
     /**
      * Returns the TupleDesc of the table stored in this DbFile.
      * 获取某一个文件的表头信息
+     *
      * @return TupleDesc of this DbFile.
      */
     public TupleDesc getTupleDesc() {
@@ -107,18 +108,17 @@ public class HeapFile implements DbFile {
      */
     public int numPages() {
         // some code goes here
-        // TODO
         return (int) this.file.length() / BufferPool.getPageSize();
     }
 
     // see DbFile.java for javadocs
-    public ArrayList<Page> insertTuple(TransactionId tid, Tuple t) throws DbException, IOException,
-                                                                  TransactionAbortedException {
+    // 事务将指定的元组插入文件。
+    // 此方法将在文件的受影响页面上获取锁，并且可能会阻塞，直到可以获取锁为止。
+    public ArrayList<Page> insertTuple(TransactionId tid, Tuple t) throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         final ArrayList<Page> dirtyPageList = new ArrayList<>();
         for (int i = 0; i < this.numPages(); i++) {
-            final HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, new HeapPageId(getId(), i),
-                Permissions.READ_WRITE);
+            final HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, new HeapPageId(getId(), i), Permissions.READ_WRITE);
             if (page != null && page.getNumEmptySlots() > 0) {
                 page.insertTuple(t);
                 page.markDirty(true, tid);
@@ -141,6 +141,8 @@ public class HeapFile implements DbFile {
     }
 
     // see DbFile.java for javadocs
+    // 指定事务从文件中删除指定元组。
+    // 此方法将在文件的受影响页面上获取锁，并且可能会阻塞，直到可以获取锁为止。
     public ArrayList<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException, TransactionAbortedException {
         // some code goes here
         final ArrayList<Page> dirtyPageList = new ArrayList<>();

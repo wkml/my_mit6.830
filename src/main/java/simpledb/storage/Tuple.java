@@ -15,9 +15,9 @@ public class Tuple implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private TupleDesc         tupleDesc;
-    private Field[]           fields;
-    private RecordId          recordId;
+    private TupleDesc tupleDesc;
+    private Field[] fields;
+    private RecordId recordId;
 
     /**
      * Create a new tuple with the specified schema (type).
@@ -95,7 +95,7 @@ public class Tuple implements Serializable {
     @Override
     public String toString() {
         return "Tuple{\n" + "tupleDesc=" + tupleDesc + ", \nfields=" + Arrays.toString(fields) + ", \nrecordId="
-               + recordId + "\n}";
+                + recordId + "\n}\n";
     }
 
     /**

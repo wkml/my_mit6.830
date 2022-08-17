@@ -13,19 +13,18 @@ import simpledb.util.HeapFileIterator;
 import java.util.*;
 
 /**
- * SeqScan is an implementation of a sequential scan access method that reads
- * each tuple of a table in no particular order (e.g., as they are laid out on
- * disk).
+ * SeqScan 是一种顺序扫描访问方法的实现
+ * 它以无特定顺序读取表的每个元组（例如，因为它们被布置在磁盘上）。
  */
 public class SeqScan implements OpIterator {
 
     private static final long serialVersionUID = 1L;
 
-    private TransactionId     tid;
-    private int               tableId;
-    private String            tableAlias;
-    private DbFileIterator    dbFileIterator;
-    private TupleDesc         tupleDesc;
+    private TransactionId tid;
+    private int tableId;
+    private String tableAlias;
+    private DbFileIterator dbFileIterator;
+    private TupleDesc tupleDesc;
 
     /**
      * Creates a sequential scan over the specified table as a part of the
@@ -110,8 +109,7 @@ public class SeqScan implements OpIterator {
         final TupleDesc td = Database.getCatalog().getTupleDesc(this.tableId);
         final ArrayList<TupleDesc.TDItem> tdItems = new ArrayList<>();
         for (final TupleDesc.TDItem item : td.getDescList()) {
-            final String fieldName = (this.tableAlias == null ? "null." : this.tableAlias) + "."
-                                     + (item.fieldName == null ? "null" : item.fieldName);
+            final String fieldName = (this.tableAlias == null ? "null." : this.tableAlias) + "." + (item.fieldName == null ? "null" : item.fieldName);
             tdItems.add(new TupleDesc.TDItem(item.fieldType, fieldName));
         }
         this.tupleDesc = new TupleDesc(tdItems);

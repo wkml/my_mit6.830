@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class Catalog {
 
-    // 维护了 ID -> 表信息 的映射关系
+    // 维护了 表ID -> 表信息 的映射关系
     private final Map<Integer, TableInfo> tableInfoMap;
     // 维护 name -> tableId 的映射关系
     private final Map<String, Integer>    nameToIdMap;
@@ -52,6 +52,7 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        // tableId是一个文件路径的hashcode（文件Id）
         final int tableId = file.getId();
         final TableInfo tableInfo = new TableInfo(tableId, name, file, pkeyField);
         this.tableInfoMap.put(tableId, tableInfo);

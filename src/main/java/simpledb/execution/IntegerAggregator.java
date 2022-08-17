@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 /**
  * Knows how to compute some aggregate over a set of IntFields.
+ * 一个聚合器, 其对传入的 Tuple , 根据 group by 字段进行 merge 操作, 将 tuple 的值合并到之前的信息中
  */
 public class IntegerAggregator implements Aggregator {
 
@@ -23,48 +24,47 @@ public class IntegerAggregator implements Aggregator {
         int min = Integer.MAX_VALUE;
     }
 
-    private Map<Field, AggInfo> groupMap;
-    // Group by field
-    private int                 gbField;
-    private Type                gbFieldType;
-    // Aggregation field
-    private int                 agField;
-    // Aggregation operation
-    private Op                  op;
-    private Field               DEFAULT_FIELD = new StringField("Default", 10);
+    // SELECT SUM(fee) AS country_group_total_fee, country FROM member GROUP BY country
 
-    private TupleDesc           td;
+    // 用于保存聚合的结果集，后面进行运算会用到
+    private Map<Field, AggInfo> groupMap;
+    // 依据 tuple 的第几个字段进行聚合操作,当无需分组时groupField的值为-1，在上面的SQL语句中相当于country这个字段
+    private int gbField;
+    // 分组字段的类型，如果无需分组这个属性值为nul
+    private Type gbFieldType;
+    // 对tuple的第几个字段进行聚合，在上面的SQL语句中相当于fee字段
+    private int agField;
+    // 进行聚合运算的操作符，相当于上述SQL语句的SUM
+    private Op op;
+    private Field DEFAULT_FIELD = new StringField("Default", 10);
+    // 结果元组的描述信息
+    private TupleDesc td;
 
     /**
      * Aggregate constructor
-     * 
-     * @param gbfield
-     *            the 0-based index of the group-by field in the tuple, or
-     *            NO_GROUPING if there is no grouping
-     * @param gbfieldtype
-     *            the type of the group by field (e.g., Type.INT_TYPE), or null
-     *            if there is no grouping
-     * @param afield
-     *            the 0-based index of the aggregate field in the tuple
-     * @param what
-     *            the aggregation operator
+     *
+     * @param gbField     the 0-based index of the group-by field in the tuple, or
+     *                    NO_GROUPING if there is no grouping
+     * @param gbFieldType the type of the group by field (e.g., Type.INT_TYPE), or null
+     *                    if there is no grouping
+     * @param aField      the 0-based index of the aggregate field in the tuple
+     * @param what        the aggregation operator
      */
 
-    public IntegerAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
+    public IntegerAggregator(int gbField, Type gbFieldType, int aField, Op what) {
         // some code goes here
         this.groupMap = new HashMap<>();
-        this.gbField = gbfield;
-        this.agField = afield;
+        this.gbField = gbField;
+        this.agField = aField;
         this.op = what;
-        this.gbFieldType = gbfieldtype;
+        this.gbFieldType = gbFieldType;
     }
 
     /**
      * Merge a new tuple into the aggregate, grouping as indicated in the
      * constructor
-     * 
-     * @param tup
-     *            the Tuple containing an aggregate field and a group-by field
+     *
+     * @param tup the Tuple containing an aggregate field and a group-by field
      */
     public void mergeTupleIntoGroup(Tuple tup) {
         // some code goes here
@@ -137,23 +137,23 @@ public class IntegerAggregator implements Aggregator {
     public void buildTupleDesc(final TupleDesc originTd) {
         // some code goes here
         if (this.gbField == NO_GROUPING) {
-            Type[] types = new Type[] { Type.INT_TYPE };
-            String[] names = new String[] { "" };
+            Type[] types = new Type[]{Type.INT_TYPE};
+            String[] names = new String[]{""};
             this.td = new TupleDesc(types, names);
         } else {
-            Type[] types = new Type[] { this.gbFieldType, Type.INT_TYPE };
-            String[] names = new String[] { originTd.getFieldName(this.gbField), originTd.getFieldName(this.agField) };
+            Type[] types = new Type[]{this.gbFieldType, Type.INT_TYPE};
+            String[] names = new String[]{originTd.getFieldName(this.gbField), originTd.getFieldName(this.agField)};
             this.td = new TupleDesc(types, names);
         }
     }
 
     /**
      * Create a OpIterator over group aggregate results.
-     * 
+     *
      * @return a OpIterator whose tuples are the pair (groupVal, aggregateVal)
-     *         if using group, or a single (aggregateVal) if no grouping. The
-     *         aggregateVal is determined by the type of aggregate specified in
-     *         the constructor.
+     * if using group, or a single (aggregateVal) if no grouping. The
+     * aggregateVal is determined by the type of aggregate specified in
+     * the constructor.
      */
     public OpIterator iterator() {
         // some code goes here
