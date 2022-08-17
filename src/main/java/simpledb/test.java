@@ -8,7 +8,6 @@ import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
 import simpledb.transaction.TransactionId;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 
 public class test {

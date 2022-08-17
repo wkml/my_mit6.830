@@ -105,6 +105,7 @@ public class HeapFile implements DbFile {
 
     /**
      * Returns the number of pages in this HeapFile.
+     * 这个file一共放在了几个页中
      */
     public int numPages() {
         // some code goes here
@@ -116,23 +117,32 @@ public class HeapFile implements DbFile {
     // 此方法将在文件的受影响页面上获取锁，并且可能会阻塞，直到可以获取锁为止。
     public ArrayList<Page> insertTuple(TransactionId tid, Tuple t) throws DbException, IOException, TransactionAbortedException {
         // some code goes here
+        // 脏页列表，说明这个页在内存中已经修改，但是还没有写入到磁盘
         final ArrayList<Page> dirtyPageList = new ArrayList<>();
+        // 遍历bufferPool中的页，寻找空槽
         for (int i = 0; i < this.numPages(); i++) {
             final HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, new HeapPageId(getId(), i), Permissions.READ_WRITE);
+            // 一个页是随机读取的，只要文件中的任意一个页，并且那个页中有空槽，就可以将一条记录（行）插入到那个槽中
             if (page != null && page.getNumEmptySlots() > 0) {
                 page.insertTuple(t);
+                // 标记这个页是脏页，后面得刷到文件中
                 page.markDirty(true, tid);
                 dirtyPageList.add(page);
                 break;
             }
         }
-        // That means all pages are full, we should create a new page
+        // That means all pages are full, we should create a new page.
+        // 走到这个分支，说明现在这个文件占有的所有页都已经满了，要新增一个页
         if (dirtyPageList.size() == 0) {
+            // 新建一个空页，页的编号是现在的页的数量（因为从0开始）
             final HeapPageId heapPageId = new HeapPageId(getId(), this.numPages());
             HeapPage newPage = new HeapPage(heapPageId, HeapPage.createEmptyPageData());
+            // 先把这个空页写到磁盘中
             writePage(newPage);
             // Through buffer pool to get newPage
+            // 这一步会先从缓存中拿，再从文件中拿，所以一定能拿到，并且会加入到缓存中
             newPage = (HeapPage) Database.getBufferPool().getPage(tid, heapPageId, Permissions.READ_WRITE);
+            // 将这条记录写入内存页，并标记为脏页
             newPage.insertTuple(t);
             newPage.markDirty(true, tid);
             dirtyPageList.add(newPage);
@@ -146,6 +156,7 @@ public class HeapFile implements DbFile {
     public ArrayList<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException, TransactionAbortedException {
         // some code goes here
         final ArrayList<Page> dirtyPageList = new ArrayList<>();
+        // 获取这条记录的位置
         final RecordId recordId = t.getRecordId();
         final PageId pageId = recordId.getPageId();
         final HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pageId, Permissions.READ_WRITE);

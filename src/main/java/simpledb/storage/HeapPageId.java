@@ -7,16 +7,22 @@ package simpledb.storage;
  */
 public class HeapPageId implements PageId {
 
+    /**
+     * 一个table的Id，其实也是一个文件的Id，因为一个table对应一个文件
+     */
     private final int tableId;
 
+    /**
+     * 页的编号， 0 表示是文件中的第0页，1 表示是文件中的第2页，以此类推
+     */
     private final int pageNum;
 
     /**
      * Constructor. Create a page id structure for a specific page of a
      * specific table.
      *
-     * @param tableId The table that is being referenced
-     * @param pgNo    The page number in that table.
+     * @param tableId 表号（其实也是文件号，二者相同）
+     * @param pgNo    页号，（注意不是页的数量）
      */
     public HeapPageId(int tableId, int pgNo) {
         // some code goes here

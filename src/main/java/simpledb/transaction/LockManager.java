@@ -19,7 +19,7 @@ public class LockManager {
             if (System.currentTimeMillis() - now >= timeout) {
                 return false;
             }
-            // 获取到了锁
+            // 获取锁
             if (acquireLock(pageId, tid, lockType)) {
                 return true;
             }
@@ -29,6 +29,7 @@ public class LockManager {
 
     public synchronized boolean acquireLock(final PageId pageId, final TransactionId tid, final int lockType) {
         // 1.If page is unlock, just return true
+        // 如果这一页没有上锁
         if (!this.lockMap.containsKey(pageId)) {
             final Lock lock = new Lock(tid, lockType);
             final List<Lock> locks = new ArrayList<>();

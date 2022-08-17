@@ -10,13 +10,17 @@ import java.util.Iterator;
  * Tuple maintains information about the contents of a tuple. Tuples have a
  * specified schema specified by a TupleDesc object and contain Field objects
  * with the data for each field.
+ * 一个tuple就是数据库中的一行
  */
 public class Tuple implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // 描述了这个行的表头
     private TupleDesc tupleDesc;
+    // 描述了这个行的所有数据
     private Field[] fields;
+    // 描述了这个行在哪个页中以及在页中的哪个位置
     private RecordId recordId;
 
     /**

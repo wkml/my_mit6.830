@@ -89,8 +89,11 @@ public class BufferPool {
      */
     public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, DbException {
         // some code goes here
+        // 只读的话是共享锁（读锁） 否则是独占锁（写锁）
         final int lockType = perm == Permissions.READ_ONLY ? 0 : 1;
+        // 超时时间
         final int timeout = new Random().nextInt(2000) + 1000;
+        // 尝试先获取锁
         if (!this.lockManager.tryAcquireLock(pid, tid, lockType, timeout)) {
             throw new TransactionAbortedException();
         }
@@ -109,8 +112,8 @@ public class BufferPool {
         final Page dbPage = dbFile.readPage(pid);
         if (dbPage != null) {
             this.lruCache.put(pid, dbPage);
+            // 如果缓存已经满了，淘汰掉不常用的页面
             if (this.lruCache.getSize() == this.lruCache.getMaxSize()) {
-                // 刷脏
                 evictPage();
             }
         }
@@ -313,14 +316,16 @@ public class BufferPool {
     /**
      * Discards a page from the buffer pool.
      * Flushes the page to disk to ensure dirty pages are updated on disk.
-     * 刷脏
+     * lru算法淘汰页面
      */
     private synchronized void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
+        // 倒着遍历，这样拿到的是最不常用的页
         final Iterator<Page> pageIterator = this.lruCache.reverseIterator();
         while (pageIterator.hasNext()) {
             final Page page = pageIterator.next();
+            // 如果这个页不是脏页，那么可以放心的从缓存中取出
             if (page.isDirty() == null) {
                 discardPage(page.getId());
                 return;

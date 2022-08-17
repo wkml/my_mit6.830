@@ -10,7 +10,9 @@ public class RecordId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // 记录存在哪一页
     private final PageId      pageId;
+    // 记录存在页中的位置
     private final int         tupleNum;
 
     /**

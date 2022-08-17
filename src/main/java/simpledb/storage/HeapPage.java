@@ -19,14 +19,20 @@ import java.io.*;
  */
 public class HeapPage implements Page {
 
-    final HeapPageId      pid;
-    final TupleDesc       td;
-    final byte[]          header;
-    final Tuple[]         tuples;
-    final int             numSlots;
+    // 一个页的ID，包含这个页对应的表的ID，以及这个表的页总数
+    final HeapPageId pid;
+    // 这个页的表的结构
+    final TupleDesc td;
+    // 维护的是一个bitmap
+    final byte[] header;
+    // 这个页存放的所有行
+    final Tuple[] tuples;
+    // 槽的数量
+    final int numSlots;
 
-    byte[]                oldData;
-    private final Byte    oldDataLock = (byte) 0;
+    // 刷脏用的
+    byte[] oldData;
+    private final Byte oldDataLock = (byte) 0;
 
     private TransactionId tid;
 
@@ -81,6 +87,7 @@ public class HeapPage implements Page {
     private int getNumTuples() {
         // some code goes here
         // 返回这个页一共有几行
+        // 4096 * 8 / td.getSize() * 8 + 1
         return (BufferPool.getPageSize() * 8) / (td.getSize() * 8 + 1);
     }
 
@@ -257,16 +264,21 @@ public class HeapPage implements Page {
      */
     public void deleteTuple(Tuple t) throws DbException {
         // some code goes here
-        // not necessary for lab1
+        // 先找到一个行存放的位置
         final RecordId recordId = t.getRecordId();
+        // 找到属于哪个页
         final HeapPageId pageId = (HeapPageId) recordId.getPageId();
+        // 存放在这个页中的哪个位置
         final int tn = recordId.getTupleNumber();
+        // 如果不是在这个页，返回
         if (!pageId.equals(this.pid)) {
             throw new DbException("Page id not match");
         }
+        // 如果这个槽没有被使用，说明出现异常
         if (!isSlotUsed(tn)) {
             throw new DbException("Slot is not used");
         }
+        // 将这个槽标记为未使用
         markSlotUsed(tn, false);
         this.tuples[tn] = null;
     }
@@ -279,20 +291,26 @@ public class HeapPage implements Page {
      * @throws DbException if the page is full (no empty slots) or tupledesc
      *                     is mismatch.
      */
+    // 都是先写磁盘，再写内存
     public void insertTuple(Tuple t) throws DbException {
         // some code goes here
-        // not necessary for lab1
+        // 如果这个行的结构和表的结构不相符，则抛出错误
         if (!t.getTupleDesc().equals(this.td)) {
             throw new DbException("Tuple desc is not match");
         }
+        // 遍历这个页，寻找已经不用的槽（行）
         for (int i = 0; i < getNumTuples(); i++) {
+            // 如果找到一个已经不使用的槽
             if (!isSlotUsed(i)) {
+                // 先将这个槽标记为已使用
                 markSlotUsed(i, true);
+                // 然后将这个槽分配给这个行
                 t.setRecordId(new RecordId(this.pid, i));
                 this.tuples[i] = t;
                 return;
             }
         }
+        // 如果没找到的话，说明这个页已经满了
         throw new DbException("The page is full");
     }
 
@@ -322,6 +340,7 @@ public class HeapPage implements Page {
         // some code goes here
         int emptyNum = 0;
         for (int i = 0; i < getNumTuples(); i++) {
+            // 位运算，查询效率高
             if (!isSlotUsed(i)) {
                 emptyNum++;
             }
@@ -332,12 +351,17 @@ public class HeapPage implements Page {
     /**
      * Returns true if associated slot on this page is filled.
      */
+    // TODO
     public boolean isSlotUsed(int i) {
         // some code goes here
         // For Example, byte = 11110111 and posIndex = 3 -> we want 0
+        // 在第几个字节
         int byteIndex = i / 8;
+        // 在字节中的第几个位置
         int posIndex = i % 8;
+        // 拿到那一个字节
         byte target = this.header[byteIndex];
+        //
         return (byte) (target << (7 - posIndex)) < 0;
     }
 
@@ -347,7 +371,9 @@ public class HeapPage implements Page {
     private void markSlotUsed(int i, boolean value) {
         // some code goes here
         // not necessary for lab1
+        // 找到属于哪个字节
         int byteIndex = i / 8;
+        // 找到字节中的位置
         int posIndex = i % 8;
         byte v = (byte) (1 << posIndex);
         byte headByte = this.header[byteIndex];
