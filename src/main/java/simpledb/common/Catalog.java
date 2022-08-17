@@ -25,7 +25,7 @@ public class Catalog {
     // 维护了 ID -> 表信息 的映射关系
     private final Map<Integer, TableInfo> tableInfoMap;
     // 维护 name -> tableId 的映射关系
-    private final Map<String, Integer> nameToIdMap;
+    private final Map<String, Integer>    nameToIdMap;
 
     /**
      * Constructor.
@@ -171,14 +171,17 @@ public class Catalog {
                 for (String e : els) {
                     String[] els2 = e.trim().split(" ");
                     names.add(els2[0].trim());
-                    if (els2[1].trim().toLowerCase().equals("int")) types.add(Type.INT_TYPE);
-                    else if (els2[1].trim().toLowerCase().equals("string")) types.add(Type.STRING_TYPE);
+                    if (els2[1].trim().toLowerCase().equals("int"))
+                        types.add(Type.INT_TYPE);
+                    else if (els2[1].trim().toLowerCase().equals("string"))
+                        types.add(Type.STRING_TYPE);
                     else {
                         System.out.println("Unknown type " + els2[1]);
                         System.exit(0);
                     }
                     if (els2.length == 3) {
-                        if (els2[2].trim().equals("pk")) primaryKey = els2[0].trim();
+                        if (els2[2].trim().equals("pk"))
+                            primaryKey = els2[0].trim();
                         else {
                             System.out.println("Unknown annotation " + els2[2]);
                             System.exit(0);

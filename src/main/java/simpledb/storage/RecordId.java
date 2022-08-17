@@ -17,10 +17,8 @@ public class RecordId implements Serializable {
      * Creates a new RecordId referring to the specified PageId and tuple
      * number.
      *
-     * @param pid
-     *            the pageid of the page on which the tuple resides
-     * @param tupleno
-     *            the tuple number within the page.
+     * @param pid     the pageid of the page on which the tuple resides
+     * @param tupleno the tuple number within the page.
      */
     public RecordId(PageId pid, int tupleno) {
         // some code goes here

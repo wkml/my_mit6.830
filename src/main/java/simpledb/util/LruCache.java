@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 public class LruCache<K, V> {
 
     // LruCache node
+    // 采用链表实现
     public class Node {
         public Node pre;
         public Node next;
@@ -33,19 +34,27 @@ public class LruCache<K, V> {
     }
 
     public void linkToHead(Node node) {
+        // 拿到第一个
         Node next = this.head.next;
+        // 将现在的节点插入到第一个之前
         node.next = next;
+        // 前置指针指向头
         node.pre = this.head;
 
         this.head.next = node;
         next.pre = node;
     }
 
+    // 将一个node移动到头部
     public void moveToHead(Node node) {
+        // 删除
         removeNode(node);
+        // 新增
         linkToHead(node);
     }
 
+    // 已经拿到链表中的一个节点，将这个节点删除
+    // 双向链表移除
     public void removeNode(Node node) {
         if (node.pre != null && node.next != null) {
             node.pre.next = node.next;
@@ -59,6 +68,7 @@ public class LruCache<K, V> {
         return last;
     }
 
+    // 移除某个指定key的节点
     public synchronized void remove(K key) {
         if (this.nodeMap.containsKey(key)) {
             final Node node = this.nodeMap.get(key);
@@ -78,11 +88,13 @@ public class LruCache<K, V> {
 
     // Return the evicted item if the space is insufficient
     public synchronized V put(K key, V value) {
+        // 如果存在的话，替换node原来的值，并移动到头
         if (this.nodeMap.containsKey(key)) {
             Node node = this.nodeMap.get(key);
             node.value = value;
             moveToHead(node);
         } else {
+            // 如果不存在，创建新的node，并加入到表的头部
             //            if (this.nodeMap.size() == this.maxSize) {
             //                Node last = removeLast();
             //                this.nodeMap.remove(last.key);

@@ -57,11 +57,11 @@ public enum Type implements Serializable {
     public abstract int getLen();
 
     /**
-     * @return a Field object of the same type as this object that has contents
-     *   read from the specified DataInputStream.
      * @param dis The input stream to read from
+     * @return a Field object of the same type as this object that has contents
+     * read from the specified DataInputStream.
      * @throws ParseException if the data read from the input stream is not
-     *   of the appropriate type.
+     *                        of the appropriate type.
      */
     public abstract Field parse(DataInputStream dis) throws ParseException;
 

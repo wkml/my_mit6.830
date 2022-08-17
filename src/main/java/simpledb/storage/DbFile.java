@@ -18,14 +18,14 @@ import java.io.*;
 public interface DbFile {
     /**
      * Read the specified page from disk.
-     *
+     * 在磁盘中读取某一页
      * @throws IllegalArgumentException if the page does not exist in this file.
      */
     Page readPage(PageId id);
 
     /**
      * Push the specified page to disk.
-     *
+     * 将一个页写入内存中
      * @param p The page to write.  page.getId().pageno() specifies the offset into the file where the page should be written.
      * @throws IOException if the write fails
      *

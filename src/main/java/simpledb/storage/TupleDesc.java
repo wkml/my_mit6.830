@@ -15,7 +15,7 @@ public class TupleDesc implements Serializable {
     private List<TDItem> descList;
 
     // 一个表的字段数量
-    private int fieldNum;
+    private int          fieldNum;
 
     /**
      * A help class to facilitate organizing the information of each field
@@ -29,13 +29,13 @@ public class TupleDesc implements Serializable {
          * The type of the field
          * 一个字段的类型
          */
-        public final Type fieldType;
+        public final Type         fieldType;
 
         /**
          * The name of the field
          * 一个字段的名称
          */
-        public String fieldName;
+        public String             fieldName;
 
         public TDItem(Type t, String n) {
             this.fieldName = n;
@@ -44,9 +44,12 @@ public class TupleDesc implements Serializable {
 
         @Override
         public boolean equals(Object o) {
-            if (o == null) return false;
-            if (o == this) return true;
-            if (!(o instanceof TDItem)) return false;
+            if (o == null)
+                return false;
+            if (o == this)
+                return true;
+            if (!(o instanceof TDItem))
+                return false;
 
             TDItem tdio = (TDItem) o;
             return tdio.fieldType == this.fieldType;
@@ -222,17 +225,22 @@ public class TupleDesc implements Serializable {
      */
 
     public boolean equals(Object o) {
-        if (o == null) return false;
-        if (o == this) return true;
-        if (!(o instanceof TupleDesc)) return false;
+        if (o == null)
+            return false;
+        if (o == this)
+            return true;
+        if (!(o instanceof TupleDesc))
+            return false;
 
         TupleDesc tdo = (TupleDesc) o;
-        if (this.numFields() != tdo.numFields()) return false;
+        if (this.numFields() != tdo.numFields())
+            return false;
         Iterator<TDItem> it1 = tdo.iterator();
         Iterator<TDItem> it2 = this.iterator();
         while (it2.hasNext()) {
             // override equals in TDItem
-            if (!(it1.next().equals(it2.next()))) return false;
+            if (!(it1.next().equals(it2.next())))
+                return false;
         }
         return true;
     }

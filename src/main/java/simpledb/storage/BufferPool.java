@@ -27,14 +27,20 @@ import java.util.Random;
  */
 public class BufferPool {
 
-    /** Bytes per page, including header. */
+    /**
+     * Bytes per page, including header.
+     * 每一页的字节数
+     */
     private static final int             DEFAULT_PAGE_SIZE = 4096;
 
     private static int                   pageSize          = DEFAULT_PAGE_SIZE;
 
-    /** Default number of pages passed to the constructor. This is used by
-     other classes. BufferPool should use the numPages argument to the
-     constructor instead. */
+    /**
+     * Default number of pages passed to the constructor. This is used by
+     * other classes. BufferPool should use the numPages argument to the
+     * constructor instead.
+     * 默认页数
+     */
     public static final int              DEFAULT_PAGES     = 50;
 
     private final LruCache<PageId, Page> lruCache;
@@ -77,8 +83,8 @@ public class BufferPool {
      * space in the buffer pool, a page should be evicted and the new page
      * should be added in its place.
      *
-     * @param tid the ID of the transaction requesting the page
-     * @param pid the ID of the requested page
+     * @param tid  the ID of the transaction requesting the page
+     * @param pid  the ID of the requested page
      * @param perm the requested permissions on the page
      */
     public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException,
@@ -89,10 +95,12 @@ public class BufferPool {
         if (!this.lockManager.tryAcquireLock(pid, tid, lockType, timeout)) {
             throw new TransactionAbortedException();
         }
+        // 用页id从缓存中拿到页
         final Page page = this.lruCache.get(pid);
         if (page != null) {
             return page;
         }
+        // 如果页不在缓存中，从文件中拿
         return loadPageAndCache(pid);
     }
 
@@ -102,6 +110,7 @@ public class BufferPool {
         if (dbPage != null) {
             this.lruCache.put(pid, dbPage);
             if (this.lruCache.getSize() == this.lruCache.getMaxSize()) {
+                // 刷脏
                 evictPage();
             }
         }
@@ -133,7 +142,9 @@ public class BufferPool {
         // not necessary for lab1|lab2
     }
 
-    /** Return true if the specified transaction has a lock on the specified page */
+    /**
+     * Return true if the specified transaction has a lock on the specified page
+     */
     public boolean holdsLock(TransactionId tid, PageId p) {
         // some code goes here
         // not necessary for lab1|lab2
@@ -144,7 +155,7 @@ public class BufferPool {
      * Commit or abort a given transaction; release all locks associated to
      * the transaction.
      *
-     * @param tid the ID of the transaction requesting the unlock
+     * @param tid    the ID of the transaction requesting the unlock
      * @param commit a flag indicating whether we should commit or abort
      */
     public void transactionComplete(TransactionId tid, boolean commit) {
@@ -167,15 +178,15 @@ public class BufferPool {
      * acquire a write lock on the page the tuple is added to and any other
      * pages that are updated (Lock acquisition is not needed for lab2).
      * May block if the lock(s) cannot be acquired.
-     *
+     * <p>
      * Marks any pages that were dirtied by the operation as dirty by calling
      * their markDirty bit, and adds versions of any pages that have
      * been dirtied to the cache (replacing any existing versions of those pages) so
      * that future requests see up-to-date pages.
      *
-     * @param tid the transaction adding the tuple
+     * @param tid     the transaction adding the tuple
      * @param tableId the table to add the tuple to
-     * @param t the tuple to add
+     * @param t       the tuple to add
      */
     public void insertTuple(TransactionId tid, int tableId, Tuple t) throws DbException, IOException,
                                                                     TransactionAbortedException {
@@ -193,14 +204,14 @@ public class BufferPool {
      * Remove the specified tuple from the buffer pool.
      * Will acquire a write lock on the page the tuple is removed from and any
      * other pages that are updated. May block if the lock(s) cannot be acquired.
-     *
+     * <p>
      * Marks any pages that were dirtied by the operation as dirty by calling
      * their markDirty bit, and adds versions of any pages that have
      * been dirtied to the cache (replacing any existing versions of those pages) so
      * that future requests see up-to-date pages.
      *
      * @param tid the transaction deleting the tuple.
-     * @param t the tuple to delete
+     * @param t   the tuple to delete
      */
     public void deleteTuple(TransactionId tid, Tuple t) throws DbException, IOException, TransactionAbortedException {
         // some code goes here
@@ -217,7 +228,7 @@ public class BufferPool {
     /**
      * Flush all dirty pages to disk.
      * NB: Be careful using this routine -- it writes dirty data to disk so will
-     *     break simpledb if running in NO STEAL mode.
+     * break simpledb if running in NO STEAL mode.
      */
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
@@ -228,13 +239,14 @@ public class BufferPool {
         }
     }
 
-    /** Remove the specific page id from the buffer pool.
-     Needed by the recovery manager to ensure that the
-     buffer pool doesn't keep a rolled back page in its
-     cache.
-
-     Also used by B+ tree files to ensure that deleted pages
-     are removed from the cache so they can be reused safely
+    /**
+     * Remove the specific page id from the buffer pool.
+     * Needed by the recovery manager to ensure that the
+     * buffer pool doesn't keep a rolled back page in its
+     * cache.
+     * <p>
+     * Also used by B+ tree files to ensure that deleted pages
+     * are removed from the cache so they can be reused safely
      */
     public synchronized void discardPage(PageId pid) {
         // some code goes here
@@ -244,6 +256,7 @@ public class BufferPool {
 
     /**
      * Flushes a certain page to disk
+     *
      * @param page the page that needed to be flush
      */
     private synchronized void flushPage(Page page) {
@@ -267,7 +280,8 @@ public class BufferPool {
         }
     }
 
-    /** Write all pages of the specified transaction to disk.
+    /**
+     * Write all pages of the specified transaction to disk.
      */
     public synchronized void flushPages(TransactionId tid) throws IOException {
         // some code goes here
@@ -281,7 +295,8 @@ public class BufferPool {
         }
     }
 
-    /** ReLoad all pages of the specified transaction from disk.
+    /**
+     * ReLoad all pages of the specified transaction from disk.
      */
     public synchronized void reLoadPages(TransactionId tid) throws IOException, DbException {
         // some code goes here
@@ -299,6 +314,7 @@ public class BufferPool {
     /**
      * Discards a page from the buffer pool.
      * Flushes the page to disk to ensure dirty pages are updated on disk.
+     * 刷脏
      */
     private synchronized void evictPage() throws DbException {
         // some code goes here

@@ -1,6 +1,10 @@
 package simpledb.storage;
 
-/** Unique identifier for HeapPage objects. */
+/**
+ * Unique identifier for HeapPage objects.
+ * 维护每一个页的唯一ID，包含tableId和page的数量
+ * 一个heap page 存储的是一个表的部分信息
+ */
 public class HeapPageId implements PageId {
 
     private final int tableId;
@@ -45,8 +49,7 @@ public class HeapPageId implements PageId {
 
     @Override
     public int hashCode() {
-        int result = 31 * tableId + pageNum;
-        return result;
+        return 31 * tableId + pageNum;
     }
 
     /**

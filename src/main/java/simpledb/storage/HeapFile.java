@@ -28,9 +28,8 @@ public class HeapFile implements DbFile {
     /**
      * Constructs a heap file backed by the specified file.
      *
-     * @param f
-     *            the file that stores the on-disk backing store for this heap
-     *            file.
+     * @param f the file that stores the on-disk backing store for this heap
+     *          file.
      */
     public HeapFile(File f, TupleDesc td) {
         // some code goes here
@@ -69,7 +68,7 @@ public class HeapFile implements DbFile {
 
     /**
      * Returns the TupleDesc of the table stored in this DbFile.
-     *
+     * 获取某一个文件的表头信息
      * @return TupleDesc of this DbFile.
      */
     public TupleDesc getTupleDesc() {
@@ -80,13 +79,13 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
         // some code goes here
+        //
         final int pos = BufferPool.getPageSize() * pid.getPageNumber();
         byte[] pageData = new byte[BufferPool.getPageSize()];
         try {
             this.randomAccessFile.seek(pos);
             this.randomAccessFile.read(pageData, 0, pageData.length);
-            final HeapPage heapPage = new HeapPage((HeapPageId) pid, pageData);
-            return heapPage;
+            return new HeapPage((HeapPageId) pid, pageData);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -108,6 +107,7 @@ public class HeapFile implements DbFile {
      */
     public int numPages() {
         // some code goes here
+        // TODO
         return (int) this.file.length() / BufferPool.getPageSize();
     }
 

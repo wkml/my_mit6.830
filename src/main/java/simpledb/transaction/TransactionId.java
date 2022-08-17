@@ -5,12 +5,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * TransactionId is a class that contains the identifier of a transaction.
+ * 包含一个事务标识符的类
  */
 public class TransactionId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // 初始ID为0，原子long保证了并发的绝对稳定自增
     static final AtomicLong   counter          = new AtomicLong(0);
+    // 每一个事物的唯一ID标识符
     final long                myid;
 
     public TransactionId() {

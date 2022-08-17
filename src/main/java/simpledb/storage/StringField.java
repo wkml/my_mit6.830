@@ -13,8 +13,8 @@ public class StringField implements Field {
 
     private static final long serialVersionUID = 1L;
 
-    private final String value;
-    private final int maxSize;
+    private final String      value;
+    private final int         maxSize;
 
     public String getValue() {
         return value;
@@ -29,8 +29,10 @@ public class StringField implements Field {
     public StringField(String s, int maxSize) {
         this.maxSize = maxSize;
 
-        if (s.length() > maxSize) value = s.substring(0, maxSize);
-        else value = s;
+        if (s.length() > maxSize)
+            value = s.substring(0, maxSize);
+        else
+            value = s;
     }
 
     public String toString() {
@@ -42,7 +44,8 @@ public class StringField implements Field {
     }
 
     public boolean equals(Object field) {
-        if (!(field instanceof StringField)) return false;
+        if (!(field instanceof StringField))
+            return false;
         return ((StringField) field).value.equals(value);
     }
 
@@ -61,7 +64,8 @@ public class StringField implements Field {
         }
         dos.writeInt(s.length());
         dos.writeBytes(s);
-        while (overflow-- > 0) dos.write((byte) 0);
+        while (overflow-- > 0)
+            dos.write((byte) 0);
     }
 
     /**

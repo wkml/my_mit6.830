@@ -14,10 +14,12 @@ public class LockManager {
 
     public boolean tryAcquireLock(final PageId pageId, final TransactionId tid, final int lockType, final int timeout) {
         final long now = System.currentTimeMillis();
+        // 如果过了超时时间，则无法获取到锁
         while (true) {
             if (System.currentTimeMillis() - now >= timeout) {
                 return false;
             }
+            // 获取到了锁
             if (acquireLock(pageId, tid, lockType)) {
                 return true;
             }
@@ -98,8 +100,7 @@ public class LockManager {
             return false;
         }
         final List<Lock> locks = this.lockMap.get(pageId);
-        for (int i = 0; i < locks.size(); i++) {
-            final Lock lock = locks.get(i);
+        for (final Lock lock : locks) {
             if (lock.getTid().equals(tid)) {
                 return true;
             }
