@@ -143,6 +143,7 @@ public class BufferPool {
     public void transactionComplete(TransactionId tid) {
         // some code goes here
         // not necessary for lab1|lab2
+        this.lockManager.releaseLockByTxn(tid);
     }
 
     /**
@@ -193,11 +194,14 @@ public class BufferPool {
      */
     public void insertTuple(TransactionId tid, int tableId, Tuple t) throws DbException, IOException, TransactionAbortedException {
         // some code goes here
-        // not necessary for lab1
+        // 先获取该表的文件
         final DbFile table = Database.getCatalog().getDatabaseFile(tableId);
+        // 将这个记录插入到页中
         final List<Page> dirtyPages = table.insertTuple(tid, t);
         for (final Page page : dirtyPages) {
+            // TODO 似乎是多余的，因为在调用insert的时候就已经被标记为脏页了
             page.markDirty(true, tid);
+            // 加入到缓存中（或者提到链头）
             this.lruCache.put(page.getId(), page);
         }
     }

@@ -13,11 +13,11 @@ import simpledb.transaction.TransactionId;
 import java.util.NoSuchElementException;
 
 public class HeapFileIterator implements DbFileIterator {
-    private final int           totalPage;
+    private final int totalPage;
     private final TransactionId transactionId;
-    private final int           tableId;
-    private int                 currentPageId;
-    private PageCachePool       pageCachePool;
+    private final int tableId;
+    private int currentPageId;
+    private PageCachePool pageCachePool;
 
     public HeapFileIterator(final int totalPages, final TransactionId transactionId, final int tableId) {
         this.totalPage = totalPages;
@@ -33,14 +33,14 @@ public class HeapFileIterator implements DbFileIterator {
     }
 
     // Cache pages as many as have
+    // 缓存一部分页到pool中
     public void cacheFilePages() {
         this.pageCachePool.clear();
         int i = this.currentPageId;
         for (; i < this.currentPageId + this.pageCachePool.getMaxCacheNum() && i < this.totalPage; i++) {
             try {
                 final HeapPageId pageId = new HeapPageId(this.tableId, i);
-                final HeapPage page = (HeapPage) Database.getBufferPool().getPage(this.transactionId, pageId,
-                    Permissions.READ_ONLY);
+                final HeapPage page = (HeapPage) Database.getBufferPool().getPage(this.transactionId, pageId, Permissions.READ_ONLY);
                 this.pageCachePool.addPage(page.iterator());
             } catch (Exception e) {
                 e.printStackTrace();
@@ -51,6 +51,7 @@ public class HeapFileIterator implements DbFileIterator {
     }
 
     @Override
+    // 读取页
     public boolean hasNext() throws DbException, TransactionAbortedException {
         if (this.pageCachePool == null) {
             return false;

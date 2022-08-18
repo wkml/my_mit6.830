@@ -21,32 +21,32 @@ import java.util.List;
 public class Insert extends Operator {
 
     private static final long serialVersionUID = 1L;
-
-    private TransactionId     tid;
-    private OpIterator        child;
-    private int               tableId;
-    private TupleDesc         td;
-    private boolean           isFetched;
+    // 执行insert 的事务
+    private TransactionId tid;
+    // 要执行insert的行
+    private OpIterator child;
+    // 执行insert的表
+    private int tableId;
+    // 固定，影响条数
+    private TupleDesc td;
+    // 是否已经执行，可能与事务有关
+    private boolean isFetched;
 
     /**
      * Constructor.
      *
-     * @param t
-     *            The transaction running the insert.
-     * @param child
-     *            The child operator from which to read tuples to be inserted.
-     * @param tableId
-     *            The table in which to insert tuples.
-     * @throws DbException
-     *             if TupleDesc of child differs from table into which we are to
-     *             insert.
+     * @param t       The transaction running the insert.
+     * @param child   The child operator from which to read tuples to be inserted.
+     * @param tableId The table in which to insert tuples.
+     * @throws DbException if TupleDesc of child differs from table into which we are to
+     *                     insert.
      */
     public Insert(TransactionId t, OpIterator child, int tableId) throws DbException {
         // some code goes here
         this.tid = t;
         this.child = child;
         this.tableId = tableId;
-        final Type[] types = new Type[] { Type.INT_TYPE };
+        final Type[] types = new Type[]{Type.INT_TYPE};
         this.td = new TupleDesc(types);
     }
 
@@ -83,7 +83,7 @@ public class Insert extends Operator {
      * duplicate before inserting it.
      *
      * @return A 1-field tuple containing the number of inserted records, or
-     *         null if called more than once.
+     * null if called more than once.
      * @see Database#getBufferPool
      * @see BufferPool#insertTuple
      */
@@ -91,8 +91,10 @@ public class Insert extends Operator {
         // some code goes here
         int cnt = 0;
         while (this.child.hasNext()) {
+            // 取出child中读取到的行
             final Tuple next = this.child.next();
             try {
+                // 插入到这张表中
                 Database.getBufferPool().insertTuple(this.tid, this.tableId, next);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -112,7 +114,7 @@ public class Insert extends Operator {
     @Override
     public OpIterator[] getChildren() {
         // some code goes here
-        return new OpIterator[] { this.child };
+        return new OpIterator[]{this.child};
     }
 
     @Override

@@ -109,7 +109,9 @@ public class HeapFile implements DbFile {
      */
     public int numPages() {
         // some code goes here
-        return (int) this.file.length() / BufferPool.getPageSize();
+        // 向上取整
+        // TODO 向上取整，可能会出问题
+        return (int) Math.ceil(this.file.length() * 1.0 / BufferPool.getPageSize());
     }
 
     // see DbFile.java for javadocs
@@ -159,9 +161,12 @@ public class HeapFile implements DbFile {
         // 获取这条记录的位置
         final RecordId recordId = t.getRecordId();
         final PageId pageId = recordId.getPageId();
+        // 获取所在的页
         final HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pageId, Permissions.READ_WRITE);
+        // 在该页上删除该记录
         if (page != null && page.isSlotUsed(recordId.getTupleNumber())) {
             page.deleteTuple(t);
+            // 标记脏页，准备刷脏
             dirtyPageList.add(page);
         }
         return dirtyPageList;

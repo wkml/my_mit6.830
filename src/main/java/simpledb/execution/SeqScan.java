@@ -13,8 +13,8 @@ import simpledb.util.HeapFileIterator;
 import java.util.*;
 
 /**
- * SeqScan 是一种顺序扫描访问方法的实现
- * 它以无特定顺序读取表的每个元组（例如，因为它们被布置在磁盘上）。
+ * SeqScan
+ * 全表扫描
  */
 public class SeqScan implements OpIterator {
 

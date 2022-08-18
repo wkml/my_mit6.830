@@ -95,6 +95,8 @@ public class LruCache<K, V> {
             moveToHead(node);
         } else {
             // 如果不存在，创建新的node，并加入到表的头部
+            // TODO 是否需要考虑cache满的情况
+
             //            if (this.nodeMap.size() == this.maxSize) {
             //                Node last = removeLast();
             //                this.nodeMap.remove(last.key);

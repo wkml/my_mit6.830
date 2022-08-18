@@ -10,7 +10,9 @@ import java.util.List;
 public class PageCachePool {
     private final List<Iterator<Tuple>> pageCache;
     private Iterator<Tuple> currentIterator;
+    // 现在访问的位置
     private int currentIndex;
+    // 最大缓存页数量
     private int maxCacheNum;
 
     public PageCachePool(final double cacheRate, final int totalPage) {

@@ -7,7 +7,7 @@ import simpledb.storage.DbFile;
  */
 public class TableInfo {
 
-    private int    tableId;
+    private int tableId;
     private String tableName;
     private DbFile dbFile;
     private String primaryKeyName;
