@@ -86,7 +86,7 @@ public class HeapPage implements Page {
      */
     private int getNumTuples() {
         // some code goes here
-        // 返回这个页一共有几行
+        // 返回这个页一共存得下几行
         // 4096 * 8 / td.getSize() * 8 + 1
         return (BufferPool.getPageSize() * 8) / (td.getSize() * 8 + 1);
     }

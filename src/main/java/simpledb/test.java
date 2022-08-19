@@ -27,6 +27,7 @@ public class test {
         // construct the query: we use a simple SeqScan, which spoonfeeds
         // tuples via its iterator.
         TransactionId tid = new TransactionId();
+        // 扫描需要将这张表加入到内存中
         SeqScan f = new SeqScan(tid, table1.getId());
 
         try {

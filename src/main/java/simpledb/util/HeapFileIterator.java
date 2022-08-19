@@ -40,6 +40,7 @@ public class HeapFileIterator implements DbFileIterator {
         for (; i < this.currentPageId + this.pageCachePool.getMaxCacheNum() && i < this.totalPage; i++) {
             try {
                 final HeapPageId pageId = new HeapPageId(this.tableId, i);
+                // 在这一步 如果表没有加载到内存中 则会加载
                 final HeapPage page = (HeapPage) Database.getBufferPool().getPage(this.transactionId, pageId, Permissions.READ_ONLY);
                 this.pageCachePool.addPage(page.iterator());
             } catch (Exception e) {

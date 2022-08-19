@@ -6,7 +6,9 @@ import java.io.*;
 import java.util.List;
 import java.util.UUID;
 
-/** Helper methods used for testing and implementing random features. */
+/**
+ * Helper methods used for testing and implementing random features.
+ */
 public class Utility {
     /**
      * @return a Type array of length len populated with Type.INT_TYPE
@@ -46,7 +48,7 @@ public class Utility {
 
     /**
      * @return a Tuple with a single IntField with value n and with
-     *   RecordId(HeapPageId(1,2), 3)
+     * RecordId(HeapPageId(1,2), 3)
      */
     public static Tuple getHeapTuple(int n) {
         Tuple tup = new Tuple(getTupleDesc(1));
@@ -57,7 +59,7 @@ public class Utility {
 
     /**
      * @return a Tuple with an IntField for every element of tupdata
-     *   and RecordId(HeapPageId(1, 2), 3)
+     * and RecordId(HeapPageId(1, 2), 3)
      */
     public static Tuple getHeapTuple(int[] tupdata) {
         Tuple tup = new Tuple(getTupleDesc(tupdata.length));
@@ -69,7 +71,7 @@ public class Utility {
 
     /**
      * @return a Tuple with a 'width' IntFields each with value n and
-     *   with RecordId(HeapPageId(1, 2), 3)
+     * with RecordId(HeapPageId(1, 2), 3)
      */
     public static Tuple getHeapTuple(int n, int width) {
         Tuple tup = new Tuple(getTupleDesc(width));
@@ -81,9 +83,9 @@ public class Utility {
 
     /**
      * @return a Tuple with a 'width' IntFields with the value tupledata[i]
-     *         in each field.
-     *         do not set it's RecordId, hence do not distinguish which
-     *         sort of file it belongs to.
+     * in each field.
+     * do not set it's RecordId, hence do not distinguish which
+     * sort of file it belongs to.
      */
     public static Tuple getTuple(int[] tupledata, int width) {
         if (tupledata.length != width) {
@@ -124,10 +126,11 @@ public class Utility {
         return hf;
     }
 
-    /** Opens a HeapFile and adds it to the catalog.
+    /**
+     * Opens a HeapFile and adds it to the catalog.
      *
      * @param cols number of columns in the table.
-     * @param f location of the file storing the table.
+     * @param f    location of the file storing the table.
      * @return the opened table.
      */
     public static HeapFile openHeapFile(int cols, File f) {
@@ -154,8 +157,7 @@ public class Utility {
     public static String listToString(List<Integer> list) {
         StringBuilder out = new StringBuilder();
         for (Integer i : list) {
-            if (out.length() > 0)
-                out.append("\t");
+            if (out.length() > 0) out.append("\t");
             out.append(i);
         }
         return out.toString();

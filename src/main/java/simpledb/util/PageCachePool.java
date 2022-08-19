@@ -24,6 +24,7 @@ public class PageCachePool {
     }
 
     public void addPage(final Iterator<Tuple> tupleIterator) {
+        // 添加页，其实是添加一个页的元组迭代器，（也就是添加了页里面所有的元组）
         if (this.pageCache.size() < this.maxCacheNum) {
             this.pageCache.add(tupleIterator);
         }
