@@ -5,15 +5,16 @@ import java.io.Serializable;
 /**
  * A RecordId is a reference to a specific tuple on a specific page of a
  * specific table.
+ * RecordId 是对特定表的特定页面上特定元组的引用。
  */
 public class RecordId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     // 记录存在哪一页
-    private final PageId      pageId;
+    private final PageId pageId;
     // 记录存在页中的位置
-    private final int         tupleNum;
+    private final int tupleNum;
 
     /**
      * Creates a new RecordId referring to the specified PageId and tuple
@@ -58,8 +59,7 @@ public class RecordId implements Serializable {
         } else if (o instanceof RecordId) {
             RecordId another = (RecordId) o;
             return pageId.equals(another.getPageId()) && another.getTupleNumber() == tupleNum;
-        } else
-            return false;
+        } else return false;
     }
 
     /**

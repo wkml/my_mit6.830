@@ -87,6 +87,7 @@ public class BufferPool {
      * @param pid  the ID of the requested page
      * @param perm the requested permissions on the page
      */
+    // TODO 这个方法是整个数据库最核心的方法
     public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, DbException {
         // some code goes here
         // 只读的话是共享锁（读锁） 否则是独占锁（写锁）
@@ -289,9 +290,8 @@ public class BufferPool {
     /**
      * Write all pages of the specified transaction to disk.
      */
-    public synchronized void flushPages(TransactionId tid) throws IOException {
+    public synchronized void flushPages(TransactionId tid) {
         // some code goes here
-        // not necessary for lab1|lab2
         final Iterator<Page> pageIterator = this.lruCache.valueIterator();
         while (pageIterator.hasNext()) {
             final Page page = pageIterator.next();

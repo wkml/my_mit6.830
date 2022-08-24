@@ -30,6 +30,6 @@ public interface Histogram<T> {
      *     join optimization. It may be needed if you want to
      *     implement a more efficient optimization
      * */
-    public double avgSelectivity();
+    double avgSelectivity();
 
 }

@@ -1,13 +1,16 @@
 package simpledb.storage;
 
 import simpledb.common.Database;
-import simpledb.transaction.TransactionId;
 import simpledb.common.Debug;
+import simpledb.transaction.TransactionId;
 
-import javax.xml.crypto.Data;
-import java.io.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.lang.reflect.*;
 
 /*
 LogFile implements the recovery subsystem of SimpleDb.  This class is
@@ -39,73 +42,74 @@ must not be declared synchronized and must begin with a block like:
 */
 
 /**
-<p> The format of the log file is as follows:
-
-<ul>
-
-<li> The first long integer of the file represents the offset of the
-last written checkpoint, or -1 if there are no checkpoints
-
-<li> All additional data in the log consists of log records.  Log
-records are variable length.
-
-<li> Each log record begins with an integer type and a long integer
-transaction id.
-
-<li> Each log record ends with a long integer file offset representing
-the position in the log file where the record began.
-
-<li> There are five record types: ABORT, COMMIT, UPDATE, BEGIN, and
-CHECKPOINT
-
-<li> ABORT, COMMIT, and BEGIN records contain no additional data
-
-<li>UPDATE RECORDS consist of two entries, a before image and an
-after image.  These images are serialized Page objects, and can be
-accessed with the LogFile.readPageData() and LogFile.writePageData()
-methods.  See LogFile.print() for an example.
-
-<li> CHECKPOINT records consist of active transactions at the time
-the checkpoint was taken and their first log record on disk.  The format
-of the record is an integer count of the number of transactions, as well
-as a long integer transaction id and a long integer first record offset
-for each active transaction.
-
-</ul>
-*/
+ * <p> The format of the log file is as follows:
+ *
+ * <ul>
+ *
+ * <li> The first long integer of the file represents the offset of the
+ * last written checkpoint, or -1 if there are no checkpoints
+ *
+ * <li> All additional data in the log consists of log records.  Log
+ * records are variable length.
+ *
+ * <li> Each log record begins with an integer type and a long integer
+ * transaction id.
+ *
+ * <li> Each log record ends with a long integer file offset representing
+ * the position in the log file where the record began.
+ *
+ * <li> There are five record types: ABORT, COMMIT, UPDATE, BEGIN, and
+ * CHECKPOINT
+ *
+ * <li> ABORT, COMMIT, and BEGIN records contain no additional data
+ *
+ * <li>UPDATE RECORDS consist of two entries, a before image and an
+ * after image.  These images are serialized Page objects, and can be
+ * accessed with the LogFile.readPageData() and LogFile.writePageData()
+ * methods.  See LogFile.print() for an example.
+ *
+ * <li> CHECKPOINT records consist of active transactions at the time
+ * the checkpoint was taken and their first log record on disk.  The format
+ * of the record is an integer count of the number of transactions, as well
+ * as a long integer transaction id and a long integer first record offset
+ * for each active transaction.
+ *
+ * </ul>
+ */
 public class LogFile {
 
-    final File               logFile;
+    final File logFile;
     private RandomAccessFile raf;
-    Boolean                  recoveryUndecided;                    // no call to recover() and no append to log
+    Boolean recoveryUndecided;                    // no call to recover() and no append to log
 
-    static final int         ABORT_RECORD        = 1;
-    static final int         COMMIT_RECORD       = 2;
-    static final int         UPDATE_RECORD       = 3;
-    static final int         BEGIN_RECORD        = 4;
-    static final int         CHECKPOINT_RECORD   = 5;
-    static final long        NO_CHECKPOINT_ID    = -1;
+    static final int ABORT_RECORD = 1;
+    static final int COMMIT_RECORD = 2;
+    static final int UPDATE_RECORD = 3;
+    static final int BEGIN_RECORD = 4;
+    static final int CHECKPOINT_RECORD = 5;
+    static final long NO_CHECKPOINT_ID = -1;
 
-    final static int         INT_SIZE            = 4;
-    final static int         LONG_SIZE           = 8;
+    final static int INT_SIZE = 4;
+    final static int LONG_SIZE = 8;
 
-    long                     currentOffset       = -1;             //protected by this
-                                                                    //    int pageSize;
-    int                      totalRecords        = 0;              // for PatchTest //protected by this
+    long currentOffset = -1;             //protected by this
+    //    int pageSize;
+    int totalRecords = 0;              // for PatchTest //protected by this
 
-    final Map<Long, Long>    tidToFirstLogRecord = new HashMap<>();
+    final Map<Long, Long> tidToFirstLogRecord = new HashMap<>();
 
-    /** Constructor.
-        Initialize and back the log file with the specified file.
-        We're not sure yet whether the caller is creating a brand new DB,
-        in which case we should ignore the log file, or whether the caller
-        will eventually want to recover (after populating the Catalog).
-        So we make this decision lazily: if someone calls recover(), then
-        do it, while if someone starts adding log file entries, then first
-        throw out the initial log file contents.
-
-        @param f The log file's name
-    */
+    /**
+     * Constructor.
+     * Initialize and back the log file with the specified file.
+     * We're not sure yet whether the caller is creating a brand new DB,
+     * in which case we should ignore the log file, or whether the caller
+     * will eventually want to recover (after populating the Catalog).
+     * So we make this decision lazily: if someone calls recover(), then
+     * do it, while if someone starts adding log file entries, then first
+     * throw out the initial log file contents.
+     *
+     * @param f The log file's name
+     */
     public LogFile(File f) throws IOException {
         this.logFile = f;
         raf = new RandomAccessFile(f, "rw");
@@ -141,10 +145,12 @@ public class LogFile {
         return totalRecords;
     }
 
-    /** Write an abort record to the log for the specified tid, force
-        the log to disk, and perform a rollback
-        @param tid The aborting transaction.
-    */
+    /**
+     * Write an abort record to the log for the specified tid, force
+     * the log to disk, and perform a rollback
+     *
+     * @param tid The aborting transaction.
+     */
     public void logAbort(TransactionId tid) throws IOException {
         // must have buffer pool lock before proceeding, since this
         // calls rollback
@@ -170,11 +176,12 @@ public class LogFile {
         }
     }
 
-    /** Write a commit record to disk for the specified tid,
-        and force the log to disk.
-
-        @param tid The committing transaction.
-    */
+    /**
+     * Write a commit record to disk for the specified tid,
+     * and force the log to disk.
+     *
+     * @param tid The committing transaction.
+     */
     public synchronized void logCommit(TransactionId tid) throws IOException {
         preAppend();
         Debug.log("COMMIT " + tid.getId());
@@ -188,14 +195,15 @@ public class LogFile {
         tidToFirstLogRecord.remove(tid.getId());
     }
 
-    /** Write an UPDATE record to disk for the specified tid and page
-        (with provided         before and after images.)
-        @param tid The transaction performing the write
-        @param before The before image of the page
-        @param after The after image of the page
-
-        @see Page#getBeforeImage
-    */
+    /**
+     * Write an UPDATE record to disk for the specified tid and page
+     * (with provided         before and after images.)
+     *
+     * @param tid    The transaction performing the write
+     * @param before The before image of the page
+     * @param after  The after image of the page
+     * @see Page#getBeforeImage
+     */
     public synchronized void logWrite(TransactionId tid, Page before, Page after) throws IOException {
         Debug.log("WRITE, offset = " + raf.getFilePointer());
         preAppend();
@@ -286,10 +294,11 @@ public class LogFile {
 
     }
 
-    /** Write a BEGIN record for the specified transaction
-        @param tid The transaction that is beginning
-
-    */
+    /**
+     * Write a BEGIN record for the specified transaction
+     *
+     * @param tid The transaction that is beginning
+     */
     public synchronized void logXactionBegin(TransactionId tid) throws IOException {
         Debug.log("BEGIN");
         if (tidToFirstLogRecord.get(tid.getId()) != null) {
@@ -306,7 +315,9 @@ public class LogFile {
         Debug.log("BEGIN OFFSET = " + currentOffset);
     }
 
-    /** Checkpoint the log and write a checkpoint record. */
+    /**
+     * Checkpoint the log and write a checkpoint record.
+     */
     public void logCheckpoint() throws IOException {
         //make sure we have buffer pool lock before proceeding
         synchronized (Database.getBufferPool()) {
@@ -347,8 +358,10 @@ public class LogFile {
         logTruncate();
     }
 
-    /** Truncate any unneeded portion of the log to reduce its space
-        consumption */
+    /**
+     * Truncate any unneeded portion of the log to reduce its space
+     * consumption
+     */
     public synchronized void logTruncate() throws IOException {
         preAppend();
         raf.seek(0);
@@ -359,8 +372,7 @@ public class LogFile {
         if (cpLoc != -1L) {
             raf.seek(cpLoc);
             int cpType = raf.readInt();
-            @SuppressWarnings("unused")
-            long cpTid = raf.readLong();
+            @SuppressWarnings("unused") long cpTid = raf.readLong();
 
             if (cpType != CHECKPOINT_RECORD) {
                 throw new RuntimeException("Checkpoint pointer does not point to checkpoint record");
@@ -369,8 +381,7 @@ public class LogFile {
             int numOutstanding = raf.readInt();
 
             for (int i = 0; i < numOutstanding; i++) {
-                @SuppressWarnings("unused")
-                long tid = raf.readLong();
+                @SuppressWarnings("unused") long tid = raf.readLong();
                 long firstLogRecord = raf.readLong();
                 if (firstLogRecord < minLogRecord) {
                     minLogRecord = firstLogRecord;
@@ -430,8 +441,7 @@ public class LogFile {
             }
         }
 
-        Debug.log("TRUNCATING LOG;  WAS " + raf.length() + " BYTES ; NEW START : " + minLogRecord + " NEW LENGTH: "
-                  + (raf.length() - minLogRecord));
+        Debug.log("TRUNCATING LOG;  WAS " + raf.length() + " BYTES ; NEW START : " + minLogRecord + " NEW LENGTH: " + (raf.length() - minLogRecord));
 
         raf.close();
         logFile.delete();
@@ -444,14 +454,15 @@ public class LogFile {
         //print();
     }
 
-    /** Rollback the specified transaction, setting the state of any
-        of pages it updated to their pre-updated state.  To preserve
-        transaction semantics, this should not be called on
-        transactions that have already committed (though this may not
-        be enforced by this method.)
-
-        @param tid The transaction to rollback
-    */
+    /**
+     * Rollback the specified transaction, setting the state of any
+     * of pages it updated to their pre-updated state.  To preserve
+     * transaction semantics, this should not be called on
+     * transactions that have already committed (though this may not
+     * be enforced by this method.)
+     *
+     * @param tid The transaction to rollback
+     */
     public void rollback(TransactionId tid) throws NoSuchElementException, IOException {
         synchronized (Database.getBufferPool()) {
             synchronized (this) {
@@ -497,9 +508,10 @@ public class LogFile {
         this.raf.skipBytes(skip);
     }
 
-    /** Recover the database system by ensuring that the updates of
-     committed transactions are installed and that the
-     updates of uncommitted transactions are not installed.
+    /**
+     * Recover the database system by ensuring that the updates of
+     * committed transactions are installed and that the
+     * updates of uncommitted transactions are not installed.
      */
     public void recover() throws IOException {
         synchronized (Database.getBufferPool()) {
@@ -568,10 +580,11 @@ public class LogFile {
         }
     }
 
-    /** Shutdown the logging system, writing out whatever state
-        is necessary so that start up can happen quickly (without
-        extensive recovery.)
-    */
+    /**
+     * Shutdown the logging system, writing out whatever state
+     * is necessary so that start up can happen quickly (without
+     * extensive recovery.)
+     */
     public synchronized void shutdown() {
         try {
             logCheckpoint(); //simple way to shutdown is to write a checkpoint record
@@ -582,7 +595,9 @@ public class LogFile {
         }
     }
 
-    /** Print out a human readable represenation of the log */
+    /**
+     * Print out a human readable represenation of the log
+     */
     public void print() throws IOException {
         long curOffset = raf.getFilePointer();
 
@@ -615,15 +630,13 @@ public class LogFile {
                     case CHECKPOINT_RECORD:
                         System.out.println(" (CHECKPOINT)");
                         int numTransactions = raf.readInt();
-                        System.out.println((raf.getFilePointer() - INT_SIZE) + ": NUMBER OF OUTSTANDING RECORDS: "
-                                           + numTransactions);
+                        System.out.println((raf.getFilePointer() - INT_SIZE) + ": NUMBER OF OUTSTANDING RECORDS: " + numTransactions);
 
                         while (numTransactions-- > 0) {
                             long tid = raf.readLong();
                             long firstRecord = raf.readLong();
                             System.out.println((raf.getFilePointer() - (LONG_SIZE + LONG_SIZE)) + ": TID: " + tid);
-                            System.out.println((raf.getFilePointer() - LONG_SIZE) + ": FIRST LOG RECORD: "
-                                               + firstRecord);
+                            System.out.println((raf.getFilePointer() - LONG_SIZE) + ": FIRST LOG RECORD: " + firstRecord);
                         }
                         System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
 
@@ -638,13 +651,11 @@ public class LogFile {
                         Page after = readPageData(raf);
 
                         System.out.println(start + ": before image table id " + before.getId().getTableId());
-                        System.out.println((start + INT_SIZE) + ": before image page number "
-                                           + before.getId().getPageNumber());
+                        System.out.println((start + INT_SIZE) + ": before image page number " + before.getId().getPageNumber());
                         System.out.println((start + INT_SIZE) + " TO " + (middle - INT_SIZE) + ": page data");
 
                         System.out.println(middle + ": after image table id " + after.getId().getTableId());
-                        System.out.println((middle + INT_SIZE) + ": after image page number "
-                                           + after.getId().getPageNumber());
+                        System.out.println((middle + INT_SIZE) + ": after image page number " + after.getId().getPageNumber());
                         System.out.println((middle + INT_SIZE) + " TO " + (raf.getFilePointer()) + ": page data");
 
                         System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());

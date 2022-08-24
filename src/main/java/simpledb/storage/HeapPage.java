@@ -34,6 +34,7 @@ public class HeapPage implements Page {
     byte[] oldData;
     private final Byte oldDataLock = (byte) 0;
 
+    // 如果一个事务修改了这个页，记录这个事务的ID
     private TransactionId tid;
 
     /**

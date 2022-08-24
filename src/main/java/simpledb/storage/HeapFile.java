@@ -94,6 +94,12 @@ public class HeapFile implements DbFile {
     }
 
     // see DbFile.java for javadocs
+
+    /**
+     * 将一个页写入到文件中
+     * @param page 要写入到文件的页
+     * @throws IOException 异常
+     */
     public void writePage(Page page) throws IOException {
         // some code goes here
         // not necessary for lab1

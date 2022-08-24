@@ -1,17 +1,20 @@
 package simpledb.index;
 
-import java.io.*;
-import java.util.*;
-
 import simpledb.common.Database;
+import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.common.Utility;
 import simpledb.execution.Predicate.Op;
-import simpledb.common.DbException;
 import simpledb.storage.*;
 import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * BTreeFileEncoder reads a comma delimited text file and converts it to
@@ -23,16 +26,16 @@ public class BTreeFileEncoder {
 
     /**
      * Encode the file using the BTreeFile's Insert method.
-     * 
-     * @param tuples - list of tuples to add to the file
-     * @param hFile - the file to temporarily store the data as a heap file on disk
-     * @param bFile - the file on disk to back the resulting BTreeFile
-     * @param keyField - the index of the key field for this B+ tree
+     *
+     * @param tuples    - list of tuples to add to the file
+     * @param hFile     - the file to temporarily store the data as a heap file on disk
+     * @param bFile     - the file on disk to back the resulting BTreeFile
+     * @param keyField  - the index of the key field for this B+ tree
      * @param numFields - the number of fields in each tuple
      * @return the BTreeFile
      */
     public static BTreeFile convert(List<List<Integer>> tuples, File hFile, File bFile, int keyField, int numFields)
-                                                                                                                    throws IOException {
+            throws IOException {
         File tempInput = File.createTempFile("tempTable", ".txt");
         tempInput.deleteOnExit();
         BufferedWriter bw = new BufferedWriter(new FileWriter(tempInput));
@@ -43,7 +46,7 @@ public class BTreeFileEncoder {
                 if (writtenFields > numFields) {
                     bw.close();
                     throw new RuntimeException("Tuple has more than " + numFields + " fields: ("
-                                               + Utility.listToString(tuple) + ")");
+                            + Utility.listToString(tuple) + ")");
                 }
                 bw.write(String.valueOf(field));
                 if (writtenFields < numFields) {
@@ -58,16 +61,16 @@ public class BTreeFileEncoder {
 
     /**
      * Encode the file using the BTreeFile's Insert method.
-     * 
-     * @param inFile - the raw text file containing the tuples
-     * @param hFile - the file to temporarily store the data as a heap file on disk
-     * @param bFile - the file on disk to back the resulting BTreeFile
-     * @param keyField - the index of the key field for this B+ tree
+     *
+     * @param inFile    - the raw text file containing the tuples
+     * @param hFile     - the file to temporarily store the data as a heap file on disk
+     * @param bFile     - the file on disk to back the resulting BTreeFile
+     * @param keyField  - the index of the key field for this B+ tree
      * @param numFields - the number of fields in each tuple
      * @return the BTreeFile
      */
     public static BTreeFile convert(File inFile, File hFile, File bFile, int keyField, int numFields)
-                                                                                                     throws IOException {
+            throws IOException {
         // convert the inFile to HeapFile first.
         HeapFileEncoder.convert(inFile, hFile, BufferPool.getPageSize(), numFields);
         HeapFile heapf = Utility.openHeapFile(numFields, hFile);
@@ -108,15 +111,15 @@ public class BTreeFileEncoder {
 
     }
 
-    /** 
+    /**
      * comparator to sort Tuples by key field
      */
     public static class TupleComparator implements Comparator<Tuple> {
         private final int keyField;
 
-        /** 
+        /**
          * Construct a TupleComparator
-         * 
+         *
          * @param keyField - the index of the field the tuples are keyed on
          */
         public TupleComparator(int keyField) {
@@ -125,7 +128,7 @@ public class BTreeFileEncoder {
 
         /**
          * Compare two tuples based on their key field
-         * 
+         *
          * @return -1 if t1 < t2, 1 if t1 > t2, 0 if t1 == t2
          */
         public int compare(Tuple t1, Tuple t2) {
@@ -141,20 +144,20 @@ public class BTreeFileEncoder {
 
     /**
      * Faster method to encode the B+ tree file
-     * 
-     * @param tuples - list of tuples to add to the file
-     * @param hFile - the file to temporarily store the data as a heap file on disk
-     * @param bFile - the file on disk to back the resulting BTreeFile
-     * @param npagebytes - number of bytes per page
-     * @param numFields - number of fields per tuple
-     * @param typeAr - array containing the types of the tuples
-     * @param fieldSeparator - character separating fields in the raw data file
-     * @param keyField - the field of the tuples the B+ tree will be keyed on
+     *
+     * @param tuples         - list of tuples to add to the file // 数据
+     * @param hFile          - the file to temporarily store the data as a heap file on disk // 将数据临时存储为磁盘上的堆文件的文件
+     * @param bFile          - the file on disk to back the resulting BTreeFile
+     * @param npagebytes     - number of bytes per page // 4096 页面大小
+     * @param numFields      - number of fields per tuple // 列数
+     * @param typeAr         - array containing the types of the tuples // 数据的类型
+     * @param fieldSeparator - character separating fields in the raw data file // 分割字符，一般是“,”
+     * @param keyField       - the field of the tuples the B+ tree will be keyed on // 主键字段
      * @return the BTreeFile
      */
     public static BTreeFile convert(List<List<Integer>> tuples, File hFile, File bFile, int npagebytes, int numFields,
                                     Type[] typeAr, char fieldSeparator, int keyField) throws IOException, DbException,
-                                                                                     TransactionAbortedException {
+            TransactionAbortedException {
         File tempInput = File.createTempFile("tempTable", ".txt");
         tempInput.deleteOnExit();
         BufferedWriter bw = new BufferedWriter(new FileWriter(tempInput));
@@ -165,7 +168,7 @@ public class BTreeFileEncoder {
                 if (writtenFields > numFields) {
                     bw.close();
                     throw new RuntimeException("Tuple has more than " + numFields + " fields: ("
-                                               + Utility.listToString(tuple) + ")");
+                            + Utility.listToString(tuple) + ")");
                 }
                 bw.write(String.valueOf(field));
                 if (writtenFields < numFields) {
@@ -178,17 +181,17 @@ public class BTreeFileEncoder {
         return convert(tempInput, hFile, bFile, npagebytes, numFields, typeAr, fieldSeparator, keyField);
     }
 
-    /** 
+    /**
      * Faster method to encode the B+ tree file
-     * 
-     * @param inFile - the file containing the raw data
-     * @param hFile - the data file for the HeapFile to be used as an intermediate conversion step
-     * @param bFile - the data file for the BTreeFile
-     * @param npagebytes - number of bytes per page
-     * @param numFields - number of fields per tuple
-     * @param typeAr - array containing the types of the tuples
+     *
+     * @param inFile         - the file containing the raw data
+     * @param hFile          - the data file for the HeapFile to be used as an intermediate conversion step
+     * @param bFile          - the data file for the BTreeFile
+     * @param npagebytes     - number of bytes per page
+     * @param numFields      - number of fields per tuple
+     * @param typeAr         - array containing the types of the tuples
      * @param fieldSeparator - character separating fields in the raw data file
-     * @param keyField - the field of the tuples the B+ tree will be keyed on
+     * @param keyField       - the field of the tuples the B+ tree will be keyed on
      * @return the B+ tree file
      * @throws IOException
      * @throws DbException
@@ -196,8 +199,9 @@ public class BTreeFileEncoder {
      */
     public static BTreeFile convert(File inFile, File hFile, File bFile, int npagebytes, int numFields, Type[] typeAr,
                                     char fieldSeparator, int keyField) throws IOException, DbException,
-                                                                      TransactionAbortedException {
+            TransactionAbortedException {
         // convert the inFile to HeapFile first.
+        // 把数据写入到heap file
         HeapFileEncoder.convert(inFile, hFile, BufferPool.getPageSize(), numFields);
         HeapFile heapf = Utility.openHeapFile(numFields, hFile);
 
@@ -328,16 +332,16 @@ public class BTreeFileEncoder {
 
     /**
      * Set all the right sibling pointers by following the left sibling pointers
-     * 
-     * @param bf - the BTreeFile
-     * @param pid - the id of the page to update with the right sibling pointer
+     *
+     * @param bf             - the BTreeFile
+     * @param pid            - the id of the page to update with the right sibling pointer
      * @param rightSiblingId - the id of the page's right sibling
      * @throws IOException
      * @throws DbException
      */
     private static void setRightSiblingPtrs(BTreeFile bf, BTreePageId pid, BTreePageId rightSiblingId)
-                                                                                                      throws IOException,
-                                                                                                      DbException {
+            throws IOException,
+            DbException {
         BTreeLeafPage page = (BTreeLeafPage) bf.readPage(pid);
         page.setRightSiblingId(rightSiblingId);
         BTreePageId leftSiblingId = page.getLeftSiblingId();
@@ -349,9 +353,9 @@ public class BTreeFileEncoder {
 
     /**
      * Recursive function to set all the parent pointers
-     * 
-     * @param bf - the BTreeFile
-     * @param pid - id of the page to update with the parent pointer
+     *
+     * @param bf     - the BTreeFile
+     * @param pid    - id of the page to update with the parent pointer
      * @param parent - the id of the page's parent
      * @throws IOException
      * @throws DbException
@@ -380,14 +384,14 @@ public class BTreeFileEncoder {
 
     /**
      * Write out any remaining entries and update the parent pointers.
-     * 
-     * @param entries - the list of remaining entries
-     * @param bf - the BTreeFile
-     * @param nentries - number of entries per page
+     *
+     * @param entries    - the list of remaining entries
+     * @param bf         - the BTreeFile
+     * @param nentries   - number of entries per page
      * @param npagebytes - number of bytes per page
-     * @param keyType - the type of the key field
-     * @param tableid - the table id of this BTreeFile
-     * @param keyField - the index of the key field
+     * @param keyType    - the type of the key field
+     * @param tableid    - the table id of this BTreeFile
+     * @param keyField   - the index of the key field
      * @throws IOException
      */
     private static void cleanUpEntries(List<List<BTreeEntry>> entries, BTreeFile bf, int nentries, int npagebytes,
@@ -414,7 +418,7 @@ public class BTreeFileEncoder {
 
                 // write out the last two pages of entries
                 byte[] secondToLastPageBytes = convertToInternalPage(secondToLastPg, npagebytes, keyType,
-                    childPageCategory);
+                        childPageCategory);
                 BTreePageId secondToLastPid = new BTreePageId(tableid, bf.numPages() + 1, BTreePageId.INTERNAL);
                 bf.writePage(new BTreeInternalPage(secondToLastPid, secondToLastPageBytes, keyField));
 
@@ -432,21 +436,21 @@ public class BTreeFileEncoder {
 
     /**
      * Recursive function to update the entries by adding a new Entry at a particular level
-     * 
-     * @param entries - the list of entries
-     * @param bf - the BTreefile
-     * @param e - the new entry 
-     * @param level - the level of the new entry (0 is closest to the leaf pages)
-     * @param nentries - number of entries per page
+     *
+     * @param entries    - the list of entries
+     * @param bf         - the BTreefile
+     * @param e          - the new entry
+     * @param level      - the level of the new entry (0 is closest to the leaf pages)
+     * @param nentries   - number of entries per page
      * @param npagebytes - number of bytes per page
-     * @param keyType - the type of the key field
-     * @param tableid - the table id of this BTreeFile
-     * @param keyField - the index of the key field
+     * @param keyType    - the type of the key field
+     * @param tableid    - the table id of this BTreeFile
+     * @param keyField   - the index of the key field
      * @throws IOException
      */
     private static void updateEntries(List<List<BTreeEntry>> entries, BTreeFile bf, BTreeEntry e, int level,
                                       int nentries, int npagebytes, Type keyType, int tableid, int keyField)
-                                                                                                            throws IOException {
+            throws IOException {
         while (entries.size() <= level) {
             entries.add(new ArrayList<>());
         }
@@ -477,12 +481,12 @@ public class BTreeFileEncoder {
 
     /**
      * Convert a set of tuples to a byte array in the format of a BTreeLeafPage
-     * 
-     * @param tuples - the set of tuples
+     *
+     * @param tuples     - the set of tuples
      * @param npagebytes - number of bytes per page
-     * @param numFields - number of fields in each tuple
-     * @param typeAr - array containing the types of the tuples
-     * @param keyField - the field of the tuples the B+ tree will be keyed on
+     * @param numFields  - number of fields in each tuple
+     * @param typeAr     - array containing the types of the tuples
+     * @param keyField   - the field of the tuples the B+ tree will be keyed on
      * @return a byte array which can be passed to the BTreeLeafPage constructor
      * @throws IOException
      */
@@ -552,12 +556,12 @@ public class BTreeFileEncoder {
     }
 
     /**
-     *  Comparator to sort BTreeEntry objects by key
+     * Comparator to sort BTreeEntry objects by key
      */
     public static class EntryComparator implements Comparator<BTreeEntry> {
         /**
          * Compare two entries based on their key field
-         * 
+         *
          * @return -1 if e1 < e2, 1 if e1 > e2, 0 if e1 == e2
          */
         public int compare(BTreeEntry e1, BTreeEntry e2) {
@@ -572,12 +576,12 @@ public class BTreeFileEncoder {
     }
 
     /**
-     *  Comparator to sort BTreeEntry objects by key in descending order
+     * Comparator to sort BTreeEntry objects by key in descending order
      */
     public static class ReverseEntryComparator implements Comparator<BTreeEntry> {
         /**
          * Compare two entries based on their key field
-         * 
+         *
          * @return -1 if e1 > e2, 1 if e1 < e2, 0 if e1 == e2
          */
         public int compare(BTreeEntry e1, BTreeEntry e2) {
@@ -593,10 +597,10 @@ public class BTreeFileEncoder {
 
     /**
      * Convert a set of entries to a byte array in the format of a BTreeInternalPage
-     * 
-     * @param entries - the set of entries
-     * @param npagebytes - number of bytes per page
-     * @param keyType - the type of the key field
+     *
+     * @param entries           - the set of entries
+     * @param npagebytes        - number of bytes per page
+     * @param keyType           - the type of the key field
      * @param childPageCategory - the category of the child pages (either internal or leaf)
      * @return a byte array which can be passed to the BTreeInternalPage constructor
      * @throws IOException
@@ -678,10 +682,10 @@ public class BTreeFileEncoder {
 
     /**
      * Create a byte array in the format of a BTreeRootPtrPage
-     * 
-     * @param root - the page number of the root page
+     *
+     * @param root         - the page number of the root page
      * @param rootCategory - the category of the root page (leaf or internal)
-     * @param header - the page number of the first header page
+     * @param header       - the page number of the first header page
      * @return a byte array which can be passed to the BTreeRootPtrPage constructor
      * @throws IOException
      */

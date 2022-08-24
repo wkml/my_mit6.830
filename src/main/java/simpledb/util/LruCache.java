@@ -10,8 +10,8 @@ public class LruCache<K, V> {
     public class Node {
         public Node pre;
         public Node next;
-        public K    key;
-        public V    value;
+        public K key;
+        public V value;
 
         public Node(final K key, final V value) {
             this.key = key;
@@ -19,10 +19,10 @@ public class LruCache<K, V> {
         }
     }
 
-    private final int          maxSize;
+    private final int maxSize;
     private final Map<K, Node> nodeMap;
-    private final Node         head;
-    private final Node         tail;
+    private final Node head;
+    private final Node tail;
 
     public LruCache(int maxSize) {
         this.maxSize = maxSize;
@@ -96,7 +96,7 @@ public class LruCache<K, V> {
         } else {
             // 如果不存在，创建新的node，并加入到表的头部
             // TODO 是否需要考虑cache满的情况
-
+            //
             //            if (this.nodeMap.size() == this.maxSize) {
             //                Node last = removeLast();
             //                this.nodeMap.remove(last.key);

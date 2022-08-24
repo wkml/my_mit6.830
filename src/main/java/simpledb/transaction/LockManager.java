@@ -12,6 +12,7 @@ public class LockManager {
         this.lockMap = new ConcurrentHashMap<>();
     }
 
+    // 尝试获取锁
     public boolean tryAcquireLock(final PageId pageId, final TransactionId tid, final int lockType, final int timeout) {
         final long now = System.currentTimeMillis();
         // 如果过了超时时间，则无法获取到锁
@@ -27,6 +28,7 @@ public class LockManager {
 
     }
 
+    // 获取锁
     public synchronized boolean acquireLock(final PageId pageId, final TransactionId tid, final int lockType) {
         // 1.If page is unlock, just return true
         // 如果这一页没有上锁
@@ -69,6 +71,7 @@ public class LockManager {
         return false;
     }
 
+    // 释放锁
     public synchronized boolean releaseLock(final PageId pageId, final TransactionId tid) {
         if (!this.lockMap.containsKey(pageId)) {
             return false;
@@ -88,6 +91,7 @@ public class LockManager {
         return false;
     }
 
+    // 通过事务释放锁
     public synchronized void releaseLockByTxn(final TransactionId tid) {
         this.lockMap.forEach((pid, locks) -> {
             if (holdsLock(pid, tid)) {
@@ -96,11 +100,14 @@ public class LockManager {
         });
     }
 
+    // 判断是否持有锁
     public synchronized boolean holdsLock(final PageId pageId, final TransactionId tid) {
+        // 如果这个页面没有任何锁，直接返回
         if (!this.lockMap.containsKey(pageId)) {
             return false;
         }
         final List<Lock> locks = this.lockMap.get(pageId);
+        // 遍历锁，查找当前事务是否持有锁
         for (final Lock lock : locks) {
             if (lock.getTid().equals(tid)) {
                 return true;

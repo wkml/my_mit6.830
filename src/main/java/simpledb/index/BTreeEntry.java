@@ -7,18 +7,17 @@ import java.io.Serializable;
 
 /**
  * Each instance of BTreeEntry stores one key and two child page ids. It is used
- * by BTreeInternalPage as an abstraction to iterate through the entries stored inside. 
- * All of the entries or tuples in the left child page should be less than or equal to 
- * the key, and all of the entries or tuples in the right child page should be greater 
+ * by BTreeInternalPage as an abstraction to iterate through the entries stored inside.
+ * All of the entries or tuples in the left child page should be less than or equal to
+ * the key, and all of the entries or tuples in the right child page should be greater
  * than or equal to the key.
- * 
- * Note that updating a BTreeEntry does not actually change the data stored on the page 
- * identified by its recordId. After updating a BTreeEntry object, you must call 
+ * <p>
+ * Note that updating a BTreeEntry does not actually change the data stored on the page
+ * identified by its recordId. After updating a BTreeEntry object, you must call
  * BTreeInternalPage.updateEntry() in order for the changes to take effect.
  *
  * @see BTreeInternalPage
  * @see BTreeInternalPage#updateEntry(BTreeEntry)
- *
  */
 public class BTreeEntry implements Serializable {
 
@@ -26,28 +25,29 @@ public class BTreeEntry implements Serializable {
 
     /**
      * The key of this entry
-     * */
-    private Field             key;
+     */
+    private Field key;
 
     /**
      * The left child page id
-     * */
-    private BTreePageId       leftChild;
+     */
+    private BTreePageId leftChild;
 
     /**
      * The right child page id
-     * */
-    private BTreePageId       rightChild;
+     */
+    private BTreePageId rightChild;
 
     /**
      * The record id of this entry
-     * */
-    private RecordId          rid;                  // null if not stored on any page
+     */
+    private RecordId rid;                  // null if not stored on any page
 
     /**
      * Constructor to create a new BTreeEntry
-     * @param key - the key
-     * @param leftChild - page id of the left child
+     *
+     * @param key        - the key
+     * @param leftChild  - page id of the left child
      * @param rightChild - page id of the right child
      */
     public BTreeEntry(Field key, BTreePageId leftChild, BTreePageId rightChild) {
@@ -86,10 +86,11 @@ public class BTreeEntry implements Serializable {
     }
 
     /**
-     * Set the key for this entry. Note that updating a BTreeEntry does not 
+     * Set the key for this entry. Note that updating a BTreeEntry does not
      * actually change the data stored on the page identified by its recordId.  After
      * calling this method, you must call BTreeInternalPage.updateEntry() in order for
      * it to take effect.
+     *
      * @param key - the new key
      * @see BTreeInternalPage#updateEntry(BTreeEntry)
      */
@@ -98,10 +99,11 @@ public class BTreeEntry implements Serializable {
     }
 
     /**
-     * Set the left child id for this entry.  Note that updating a BTreeEntry does not 
+     * Set the left child id for this entry.  Note that updating a BTreeEntry does not
      * actually change the data stored on the page identified by its recordId.  After
      * calling this method, you must call BTreeInternalPage.updateEntry() in order for
      * it to take effect.
+     *
      * @param leftChild - the new left child
      * @see BTreeInternalPage#updateEntry(BTreeEntry)
      */
@@ -110,10 +112,11 @@ public class BTreeEntry implements Serializable {
     }
 
     /**
-     * Set the right child id for this entry.  Note that updating a BTreeEntry does not 
+     * Set the right child id for this entry.  Note that updating a BTreeEntry does not
      * actually change the data stored on the page identified by its recordId.  After
      * calling this method, you must call BTreeInternalPage.updateEntry() in order for
      * it to take effect.
+     *
      * @param rightChild - the new right child
      * @see BTreeInternalPage#updateEntry(BTreeEntry)
      */
@@ -123,6 +126,7 @@ public class BTreeEntry implements Serializable {
 
     /**
      * set the record id for this entry
+     *
      * @param rid - the new record id
      */
     public void setRecordId(RecordId rid) {
